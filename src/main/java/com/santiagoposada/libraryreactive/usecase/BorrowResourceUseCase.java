@@ -1,15 +1,17 @@
 package com.santiagoposada.libraryreactive.usecase;
 
 
-import com.santiagoposada.libraryreactive.mapper.ResourceMapper;
-import com.santiagoposada.libraryreactive.repository.ResourceRepository;
+import java.time.LocalDate;
+import java.util.function.Function;
+
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
-import java.util.Objects;
-import java.util.function.Function;
+import com.santiagoposada.libraryreactive.mapper.ResourceMapper;
+import com.santiagoposada.libraryreactive.repository.ResourceRepository;
+import com.santiagoposada.libraryreactive.utils.ResourceNotFoundException;
+
+import reactor.core.publisher.Mono;
 
 @Service
 @Validated
@@ -26,7 +28,10 @@ public class BorrowResourceUseCase implements Function<String, Mono<String>> {
 
     @Override
     public Mono<String> apply(String id) {
-        Objects.requireNonNull(id, "Id required to borrow a book");
+        // Objects.requireNonNull(id, "Id required to borrow a book");
+        if (id == null) {
+            return Mono.error(new ResourceNotFoundException("Id is required to borrow a book"));
+        }
         return resourceRepository.findById(id).flatMap(
                 resource->{
                     if(resource.getUnitsAvailable() > 0){

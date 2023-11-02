@@ -1,32 +1,32 @@
 package com.santiagoposada.libraryreactive.usecase;
 
-import com.santiagoposada.libraryreactive.dto.ResourceDTO;
-import com.santiagoposada.libraryreactive.entity.Resource;
-import com.santiagoposada.libraryreactive.repository.ResourceRepository;
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import reactor.core.publisher.Mono;
+
+import com.santiagoposada.libraryreactive.dto.ResourceDTO;
+import com.santiagoposada.libraryreactive.entity.Resource;
+import com.santiagoposada.libraryreactive.repository.ResourceRepository;
+
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.any;
-import java.time.LocalDate;
-
 @SpringBootTest
-class CreateResourceUseCaseTest {
+public class GetByTypeUseCaseTest {
+
     @MockBean
     private ResourceRepository resourceRepository;
 
     @SpyBean
-    private CreateResourceUseCase createResourceUseCase;
+    private GetByTypeUseCase getByTypeUseCase;
 
     @Test
-    @DisplayName("Create resource")
-    void createResourceTest() {
+    void testApply() {
         // Arrange
         Resource resource = new Resource();
 
@@ -47,10 +47,10 @@ class CreateResourceUseCaseTest {
         resourceDTO.setUnitsOwed(resource.getUnitsOwed());
         resourceDTO.setLastBorrow(resource.getLastBorrow());
 
-        Mockito.when(resourceRepository.save(any())).thenReturn(Mono.just(resource));
+        Mockito.when(resourceRepository.findAllByType(resourceDTO.getType())).thenReturn(Flux.just(resource));
 
         // Act
-        Mono<ResourceDTO> result = createResourceUseCase.apply(resourceDTO);
+        Flux<ResourceDTO> result = getByTypeUseCase.apply(resourceDTO.getType());
 
         // Assert
         StepVerifier.create(result)
@@ -60,5 +60,20 @@ class CreateResourceUseCaseTest {
                     return resourceCurrent.getId().equals(resourceDTO.getId());
                 })
                 .verifyComplete();
+    }
+
+    @Test
+    void testApply_empty() {
+        // Arrange
+        Mockito.when(resourceRepository.findAllByType("otherType")).thenReturn(Flux.empty());
+
+        // Act
+        Flux<ResourceDTO> result = getByTypeUseCase.apply("otherType");
+
+        // Assert
+        StepVerifier.create(result)
+                .expectNextCount(0)
+                .expectComplete()
+                .verify();
     }
 }

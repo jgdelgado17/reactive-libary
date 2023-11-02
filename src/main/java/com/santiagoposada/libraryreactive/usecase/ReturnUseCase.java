@@ -1,13 +1,15 @@
 package com.santiagoposada.libraryreactive.usecase;
 
-import com.santiagoposada.libraryreactive.mapper.ResourceMapper;
-import com.santiagoposada.libraryreactive.repository.ResourceRepository;
+import java.util.function.Function;
+
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import reactor.core.publisher.Mono;
 
-import java.util.Objects;
-import java.util.function.Function;
+import com.santiagoposada.libraryreactive.mapper.ResourceMapper;
+import com.santiagoposada.libraryreactive.repository.ResourceRepository;
+import com.santiagoposada.libraryreactive.utils.ResourceNotFoundException;
+
+import reactor.core.publisher.Mono;
 
 
 @Service
@@ -27,7 +29,10 @@ public class ReturnUseCase implements Function<String, Mono<String>> {
 
     @Override
     public Mono<String> apply(String id) {
-        Objects.requireNonNull(id, "Id is required to return a resource");
+        // Objects.requireNonNull(id, "Id is required to return a resource");
+        if (id == null) {
+            return Mono.error(new ResourceNotFoundException("Id is required to return a resource"));
+        }
         return resourceRepository.findById(id).flatMap(
                 resource -> {
                     resource.setUnitsOwed(resource.getUnitsOwed() - 1);

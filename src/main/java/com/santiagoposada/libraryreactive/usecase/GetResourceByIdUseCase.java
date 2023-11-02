@@ -3,15 +3,12 @@ package com.santiagoposada.libraryreactive.usecase;
 import com.santiagoposada.libraryreactive.dto.ResourceDTO;
 import com.santiagoposada.libraryreactive.mapper.ResourceMapper;
 import com.santiagoposada.libraryreactive.repository.ResourceRepository;
-import com.santiagoposada.libraryreactive.utils.HttpExceptionBuilder;
 import com.santiagoposada.libraryreactive.utils.ResourceNotFoundException;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
 import java.util.function.Function;
 
 @Service
@@ -27,7 +24,10 @@ public class GetResourceByIdUseCase implements Function<String, Mono<ResourceDTO
 
     @Override
     public Mono<ResourceDTO> apply(String id) {
-        Objects.requireNonNull(id, "Id is required to get a resource");
+        // Objects.requireNonNull(id, "Id is required to get a resource");
+        if (id == null) {
+            return Mono.error(new ResourceNotFoundException("Id is required to get a resource"));
+        }
         return resourceRepository
                 .findById(id)
                 .map(resource -> resourceMapper

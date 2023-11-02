@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
-
 @Service
 @Validated
 public class CreateResourceUseCase implements CreateResource{
